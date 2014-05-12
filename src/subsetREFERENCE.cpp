@@ -30,6 +30,8 @@ int main(int argc, char **argv) {
     exit(1);
   }
   const bool complement = argc == 5 ? true : false;
+  if(complement)
+      cerr << "Output is complement of subset\n";
   int line = 0;
   multimap<int, snp> M;
   cerr << "Reading subset of variants in [" << argv[1] << "]" << endl;
