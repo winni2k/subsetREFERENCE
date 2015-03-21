@@ -23,15 +23,25 @@ public:
 int main(int argc, char **argv) {
   string buffer;
 
-  if (argc < 4 || argc > 5) {
+  if (argc < 4) {
     cerr << "Incorrect number of options:\nsubsetREFERENCE "
-            "reference.haps/.gen(.gz) subsetSites.map output.file.gen(.gz) "
-            "[complement]" << endl;
+            "subsetSites.map reference.haps/.gen(.gz) output.file.gen(.gz) "
+            "[complement|noStrand]" << endl;
     exit(1);
   }
-  const bool complement = argc == 5 ? true : false;
-  if(complement)
+  bool complement = false;
+  bool noStrand = false;
+  for (int i = 4; i < argc; ++i) {
+    if (strcmp(argv[i], "complement") == 0) {
+      complement = true;
       cerr << "Output is complement of subset\n";
+    }
+    if (strcmp(argv[i], "noStrand") == 0) {
+      noStrand = true;
+      cerr << "Allowing ref/alt flip for match\n";
+    }
+  }
+
   int line = 0;
   multimap<int, snp> M;
   cerr << "Reading subset of variants in [" << argv[1] << "]" << endl;
@@ -61,9 +71,12 @@ int main(int argc, char **argv) {
         M.equal_range(pos);
     for (multimap<int, snp>::iterator it = seqM.first; it != seqM.second && !ok;
          ++it)
-      ok = (ok || it->second.strand(a0, a1));
+
+      // also check the reverse strand if nostrand is true
+      ok = (ok || it->second.strand(a0, a1) ||
+            (noStrand && it->second.strand(a1, a0)));
     if (complement)
-        ok = !ok;
+      ok = !ok;
     if (ok) {
       fdo << buffer << endl;
       found++;
