@@ -48,6 +48,9 @@ int main(int argc, char **argv) {
   ifile fdl(argv[1]);
   while (getline(fdl, buffer, '\n')) {
     vector<string> tokens = sutils::tokenize(buffer, " ", 6);
+    if (tokens.size() < 5)
+      throw runtime_error("Input map line has less than 5 columns [" + buffer +
+                          "]");
     int pos = atoi(tokens[1].c_str());
     M.insert(pair<int, snp>(pos, snp(pos, tokens[3], tokens[4])));
     line++;
