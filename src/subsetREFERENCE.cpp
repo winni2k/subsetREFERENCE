@@ -79,7 +79,18 @@ int main(int argc, char **argv) {
        << "] and writing subset in [" << argv[3] << "]" << endl;
   ifile fdi(argv[2]);
   ofile fdo(argv[3]);
+
+  // start off begin in the past so we get first update right away
+  clock_t begin = clock() - CLOCKS_PER_SEC * 10;
   while (getline(fdi, buffer, '\n')) {
+
+    clock_t end = clock();
+    // refresh every ten seconds
+    if (double(end - begin) / CLOCKS_PER_SEC > 10) {
+      cerr << "\r" << found << " / " << line;
+      begin = clock();
+    }
+
     vector<string> tokens = sutils::tokenize(buffer, " ", 6);
     string a0 = tokens[3];
     string a1 = tokens[4];
@@ -98,9 +109,6 @@ int main(int argc, char **argv) {
     if (ok) {
       fdo << buffer << endl;
       ++found;
-    }
-    if (line % 100000 == 0) {
-      cerr << "\r" << found << " / " << line;
     }
     line++;
   }
