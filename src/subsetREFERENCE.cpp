@@ -57,16 +57,20 @@ int main(int argc, char **argv) {
     if (tokens.size() < 5)
       throw runtime_error("Input map line has less than 5 columns [" + buffer +
                           "]");
-    int pos = atoi(tokens[1].c_str());
+    std::string::size_type last_char = 0;
+    int pos = stoi(tokens[1], &last_char);
+    if (last_char != tokens[1].size())
+      throw runtime_error("Could not parse position [" + tokens[1] + "]");
+
     M.insert(pair<string, snp>(tokens[0] + ":" + tokens[1],
                                snp(pos, tokens[3], tokens[4])));
     line++;
   }
   cerr << "  * " << line << " variants read" << endl;
   fdl.close();
-  if(line < 1){
-      cerr << "ERROR: input .map is empty" << endl;
-      exit(1);
+  if (line < 1) {
+    cerr << "ERROR: input .map is empty" << endl;
+    exit(1);
   }
 
   line = 0;
@@ -85,8 +89,7 @@ int main(int argc, char **argv) {
     auto seqM = M.equal_range(tokens[0] + ":" + tokens[2]);
     for (auto it = seqM.first; it != seqM.second; ++it) {
       // also check the reverse strand if nostrand is true
-      ok = it->second.strand(a0, a1) ||
-           (noStrand && it->second.strand(a1, a0));
+      ok = it->second.strand(a0, a1) || (noStrand && it->second.strand(a1, a0));
       if (ok)
         break;
     }
