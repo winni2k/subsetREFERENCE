@@ -1,4 +1,9 @@
 #include "utils.h"
+#include <unordered_map>
+
+#if __cplusplus <= 199711L
+#error This library needs at least a C++11 compliant compiler
+#endif
 
 class snp {
 public:
@@ -23,6 +28,7 @@ public:
 int main(int argc, char **argv) {
   string buffer;
 
+  cerr << "subsetREFERENCE v1.1.0" << endl;
   if (argc < 4) {
     cerr << "Incorrect number of options:\nsubsetREFERENCE "
             "subsetSites.map reference.haps/.gen(.gz) output.file.gen(.gz) "
@@ -43,7 +49,7 @@ int main(int argc, char **argv) {
   }
 
   int line = 0;
-  multimap<int, snp> M;
+  unordered_multimap<string, snp> M;
   cerr << "Reading subset of variants in [" << argv[1] << "]" << endl;
   ifile fdl(argv[1]);
   while (getline(fdl, buffer, '\n')) {
@@ -52,11 +58,16 @@ int main(int argc, char **argv) {
       throw runtime_error("Input map line has less than 5 columns [" + buffer +
                           "]");
     int pos = atoi(tokens[1].c_str());
-    M.insert(pair<int, snp>(pos, snp(pos, tokens[3], tokens[4])));
+    M.insert(pair<string, snp>(tokens[0] + ":" + tokens[1],
+                               snp(pos, tokens[3], tokens[4])));
     line++;
   }
   cerr << "  * " << line << " variants read" << endl;
   fdl.close();
+  if(line < 1){
+      cerr << "ERROR: input .map is empty" << endl;
+      exit(1);
+  }
 
   line = 0;
   int found = 0;
@@ -66,27 +77,27 @@ int main(int argc, char **argv) {
   ofile fdo(argv[3]);
   while (getline(fdi, buffer, '\n')) {
     vector<string> tokens = sutils::tokenize(buffer, " ", 6);
-    int pos = atoi(tokens[2].c_str());
     string a0 = tokens[3];
     string a1 = tokens[4];
     bool ok = false;
-    pair<multimap<int, snp>::iterator, multimap<int, snp>::iterator> seqM =
-        M.equal_range(pos);
-    for (multimap<int, snp>::iterator it = seqM.first; it != seqM.second && !ok;
-         ++it)
 
+    // attempt to match a0 and a1 with an element from M
+    auto seqM = M.equal_range(tokens[0] + ":" + tokens[2]);
+    for (auto it = seqM.first; it != seqM.second; ++it) {
       // also check the reverse strand if nostrand is true
-      ok = (ok || it->second.strand(a0, a1) ||
-            (noStrand && it->second.strand(a1, a0)));
+      ok = it->second.strand(a0, a1) ||
+           (noStrand && it->second.strand(a1, a0));
+      if (ok)
+        break;
+    }
     if (complement)
       ok = !ok;
     if (ok) {
       fdo << buffer << endl;
-      found++;
+      ++found;
     }
-    if (line % 1000 == 0) {
+    if (line % 100000 == 0) {
       cerr << "\r" << found << " / " << line;
-      cerr.flush();
     }
     line++;
   }

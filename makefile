@@ -2,7 +2,7 @@
 CXX=g++
 
 #compiler flags
-COPTI= -O3
+COPTI= -O3 -std=c++11
 CDEBG= -g
 CWARN= -Wall -Wextra -Wno-sign-compare
 CBAMH= -D_LIBBAM
@@ -70,12 +70,12 @@ obj/%.o: %.cpp $(HFILE)
 
 clean: 
 	rm -f obj/*.o $(EFILE)
-	
+
 test:
 	cp $(EFILE) ~/$(EFILE).v10
 
 oxford:
 	cp $(EFILE) ~/bin/.
-	
+
 install:
 	cp $(EFILE) /usr/local/bin/.
