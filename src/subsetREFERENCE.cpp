@@ -28,7 +28,7 @@ public:
 int main(int argc, char **argv) {
   string buffer;
 
-  cerr << "subsetREFERENCE v1.1.0" << endl;
+  cerr << "subsetREFERENCE v1.1.2" << endl;
   if (argc < 4) {
     cerr << "Incorrect number of options:\nsubsetREFERENCE "
             "subsetSites.map reference.haps/.gen(.gz) output.file.gen(.gz) "

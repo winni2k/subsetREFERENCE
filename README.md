@@ -1,6 +1,6 @@
 # subsetREFERENCE
 
-This is a tool for subsetting sites from a
+This is a simple tool for subsetting sites from a
 [WTCCC style haplotypes file](https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#hapsample).
 
 ## Authors
